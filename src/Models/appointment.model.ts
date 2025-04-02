@@ -6,7 +6,7 @@ import {
   Model,
   Table,
 } from 'sequelize-typescript';
-import Users from './users.model';
+import Customers from './customer.model';
 
 @Table({ tableName: 'Appointments', timestamps: true })
 export default class Appointments extends Model<Appointments> {
@@ -21,12 +21,12 @@ export default class Appointments extends Model<Appointments> {
   @Column({ type: DataType.INTEGER, allowNull: false })
   suitsQty: number;
 
-  @ForeignKey(() => Users)
+  @ForeignKey(() => Customers)
   @Column({ type: DataType.INTEGER, allowNull: false })
-  userId: number;
+  customerId: number;
 
-  @BelongsTo(() => Users)
-  user: Users;
+  @BelongsTo(() => Customers)
+  customer: Customers;
 
   @Column({ type: DataType.STRING, allowNull: false })
   notes: string;

@@ -6,6 +6,8 @@ import {
   HttpException,
   Inject,
   ParseIntPipe,
+  Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import AppointmentService from './appointment.service';
@@ -20,7 +22,7 @@ export default class AppointmentsController {
     private readonly appService: AppService,
   ) {}
 
-  @Get('create-appointment')
+  @Post('create-appointment')
   async createAppointment(
     @Body() myAppointment: any,
     @Headers('authorization') authHeader: string,
@@ -29,12 +31,14 @@ export default class AppointmentsController {
     try {
       token = authHeader.split(' ')[1];
     } catch (error) {
+      console.log(error);
       throw new HttpException('Not authorized', 401);
     }
     const verified = await this.appService.verifyAuth(token);
     if (verified.response) {
       return this.appointmentService.createAppointment(myAppointment);
     } else {
+      console.log('Not identified.....');
       throw new HttpException('Not authorized', 401);
     }
   }
@@ -58,6 +62,29 @@ export default class AppointmentsController {
         page,
         limit,
         searchTerm,
+      );
+    } else {
+      throw new HttpException('Not authorized', 401);
+    }
+  }
+
+  @Put('update-appointment')
+  async updateAppointment(
+    @Headers('authorization') authHeader: string,
+    @Query('appointmentId', ParseIntPipe) appointmentId: number,
+    @Body() appointmentData: any,
+  ) {
+    let token: string;
+    try {
+      token = authHeader.split(' ')[1];
+    } catch (error) {
+      throw new HttpException('Not authorized', 401);
+    }
+    const verified = await this.appService.verifyAuth(token);
+    if (verified.response) {
+      return this.appointmentService.updateAppointment(
+        appointmentData,
+        appointmentId,
       );
     } else {
       throw new HttpException('Not authorized', 401);

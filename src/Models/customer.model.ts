@@ -1,4 +1,13 @@
-import { Column, DataType, Model, Table } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  HasMany,
+  Model,
+  Table,
+} from 'sequelize-typescript';
+import AppointmentItems from './appointmentItem.model';
+import Appointments from './appointment.model';
 
 @Table({ tableName: 'customers', timestamps: true })
 export default class Customers extends Model<Customers> {

@@ -1,9 +1,10 @@
-import { HttpException, Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import Appointments from 'src/Models/appointment.model';
 import AppointmentItems from 'src/Models/appointmentItem.model';
+import Customers from 'src/Models/customer.model';
 import Users from 'src/Models/users.model';
 
 @Injectable()
@@ -22,7 +23,7 @@ export default class AppointmentService {
       let whereCondition = {};
       if (searchTerm || searchTerm.trim().length > 0) {
         whereCondition[Op.or] = [
-          { '$user.name$': { [Op.like]: `%${searchTerm}%` } },
+          { '$customer.name$': { [Op.like]: `%${searchTerm}%` } },
           { notes: { [Op.like]: `%${searchTerm}%` } },
           { totalPrice: { [Op.like]: `%${searchTerm}%` } },
         ];
@@ -31,7 +32,7 @@ export default class AppointmentService {
         offset,
         limit,
         where: whereCondition,
-        include: [{ model: Users, as: 'user', required: true }],
+        include: [{ model: Customers, as: 'customer', required: true }],
       });
       return {
         response: 'Success',
@@ -49,17 +50,20 @@ export default class AppointmentService {
     let appointmentItemResult: any;
     const transaction = await this.sequelize.transaction();
     try {
+      myAppointment.appointmentData.customerId =
+        myAppointment.appointmentData.customerId * 1;
+      // console.log('appointmentItemsData.....', myAppointment.items);
       const appointmentResult = await this.appointmentModel.create(
         myAppointment.appointmentData,
         { transaction },
       );
       for (let i = 0; i < myAppointment.items.length; i++) {
         let item = {
-          item: myAppointment.items.item.name,
-          price: myAppointment.items.item.price,
-          qty: myAppointment.items.item.qty,
-          totalPrice: myAppointment.items.item.itemTotalPrice,
-          appointmentId: appointmentResult.id,
+          item: myAppointment.items[i].item.name,
+          price: myAppointment.items[i].item.price,
+          qty: myAppointment.items[i].item.qty,
+          totalPrice: myAppointment.items[i].item.itemTotalPrice,
+          appointmentId: Number(appointmentResult.id),
         };
         appointmentItemResult = await this.appointmentItemsModel.create(
           item as any,
@@ -77,6 +81,67 @@ export default class AppointmentService {
     } catch (error) {
       transaction.rollback();
       console.log(error);
+      throw new HttpException('Internal server error', 500);
+    }
+  }
+
+  async updateAppointment(appointmentData: any, appointmentId: number) {
+    const transaction = await this.sequelize.transaction();
+    console.log('AppointmentId..........', appointmentId);
+    try {
+      appointmentData.appointmentData.customerId = Number(
+        appointmentData.appointmentData.customerId,
+      );
+
+      const appointments = await this.appointmentModel.findAll({
+        where: { id: appointmentId },
+        transaction,
+      });
+
+      if (appointments.length !== 1) {
+        throw new HttpException(
+          'Appointment not found or multiple appointments returned.',
+          HttpStatus.AMBIGUOUS,
+        );
+      }
+
+      const updatedAppointment = await appointments[0].update(
+        appointmentData.appointmentData,
+        { transaction },
+      );
+
+      if (!updatedAppointment) {
+        throw new Error('Failed to update appointment.');
+      }
+
+      const appointmentItems = await this.appointmentItemsModel.findAll({
+        where: { appointmentId },
+        transaction,
+      });
+
+      if (appointmentItems.length !== appointmentData.items.length) {
+        throw new Error(
+          'Mismatch between appointment items and provided items data.',
+        );
+      }
+
+      await Promise.all(
+        appointmentItems.map((eachItem, index) => {
+          const itemData = {
+            item: appointmentData.items[index].item.name,
+            price: appointmentData.items[index].item.price,
+            qty: appointmentData.items[index].item.qty,
+            totalPrice: appointmentData.items[index].item.itemTotalPrice,
+            appointmentId,
+          };
+          return eachItem.update(itemData as any, { transaction });
+        }),
+      );
+
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
       throw new HttpException('Internal server error', 500);
     }
   }

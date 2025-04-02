@@ -11,6 +11,8 @@ import Appointments from './Models/appointment.model';
 import AppointmentsController from './appointments/appointment.controller';
 import AppointmentService from './appointments/appointment.service';
 import AppointmentItems from './Models/appointmentItem.model';
+import AppointmentItemsSevice from './appointmentItems/appointmentItems.service';
+import AppointmentItemsController from './appointmentItems/appointmentItems.controller';
 
 @Module({
   imports: [
@@ -32,7 +34,17 @@ import AppointmentItems from './Models/appointmentItem.model';
       AppointmentItems,
     ]),
   ],
-  controllers: [AppController, CustomersController, AppointmentsController],
-  providers: [AppService, CustomersService, AppointmentService],
+  controllers: [
+    AppController,
+    CustomersController,
+    AppointmentsController,
+    AppointmentItemsController,
+  ],
+  providers: [
+    AppService,
+    CustomersService,
+    AppointmentService,
+    AppointmentItemsSevice,
+  ],
 })
 export class AppModule {}
