@@ -139,6 +139,12 @@ export default class AppointmentService {
       );
 
       await transaction.commit();
+
+      return {
+        response: 'Success',
+        message: 'Successfully updated appointment',
+        statusCode: 202,
+      };
     } catch (error) {
       await transaction.rollback();
       console.error(error);

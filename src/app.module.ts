@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { ChatGateway } from './chat/chat.gateway';
 import Users from './Models/users.model';
 import Customers from './Models/customer.model';
 import CustomersController from './customers/customers.controller';
@@ -45,6 +46,7 @@ import AppointmentItemsController from './appointmentItems/appointmentItems.cont
     CustomersService,
     AppointmentService,
     AppointmentItemsSevice,
+    ChatGateway,
   ],
 })
 export class AppModule {}

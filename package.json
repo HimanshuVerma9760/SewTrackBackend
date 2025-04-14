@@ -24,7 +24,9 @@
     "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-socket.io": "^11.0.16",
     "@nestjs/sequelize": "^11.0.0",
+    "@nestjs/websockets": "^11.0.16",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
@@ -35,6 +37,8 @@
     "rxjs": "^7.8.1",
     "sequelize": "^6.37.6",
     "sequelize-typescript": "^2.1.6",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
